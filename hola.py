@@ -8,40 +8,37 @@ from itertools import product
 # Create an instance of Chrome webdriver
 driver = webdriver.Chrome()
 
+# Navigate to the webpage
+driver.get("https://www.taylormadegolf.com/taylormade-drivers/?lang=en_US")
+data = []
 # Array with links lo do Web Scrapping
 pages = [
     {
-        'category': "Clubs/Drivers",
+        'category': "Products/Clubs/Drivers",
         'url': "https://www.taylormadegolf.com/taylormade-drivers/?lang=en_US"
     },
     {
-        'category': "Clubs/Fairway Woods",
+        'category': "Products/Clubs/Fairway Woods",
         'url': "https://www.taylormadegolf.com/taylormade-fairways/?lang=en_US"
     },
     {
-        'category': "Clubs/Hybrids",
+        'category': "Products/Clubs/Hybrids",
         'url': "https://www.taylormadegolf.com/taylormade-rescues/?lang=en_US"
     },
     {
-        'category': "Clubs/Irons",
+        'category': "Products/Clubs/Irons",
         'url': "https://www.taylormadegolf.com/taylormade-irons/?lang=en_US"
     },
     {
-        'category': "Clubs/Wedges",
+        'category': "Products/Clubs/Wedges",
         'url': "https://www.taylormadegolf.com/taylormade-wedges/?lang=en_US"
     },
     {
-        'category': "Clubs/Putters",
+        'category': "Products/Clubs/Putters",
         'url': "https://www.taylormadegolf.com/taylormade-putters/?lang=en_US"
     }
 
 ]
-
-# Navigate to the webpage
-
-driver.get("https://www.taylormadegolf.com/taylormade-drivers/?lang=en_US")
-data = []
-
 
 time.sleep(20)
 
@@ -56,37 +53,21 @@ for page in pages:
 
     # Loop through each product and extract the link
     for productUnit in product_elements:
-        links = links + \
-            [productUnit.find_element("tag name", "a").get_attribute("href")]
+        links = links + [productUnit.find_element("tag name", "a").get_attribute("href")]
 
     for link in links:
         print(link)
         driver.get(link)
-
         try:
-            image = driver.find_element(
-                "class name", "img-fluid").get_attribute("src")
-        except:
-            image = "No image"
-
-        try:
-            name = driver.find_element("id", "product-name").text.strip()
-        except:
-            name = "No name"
-
-        try:
+            image = driver.find_element("class name", "img-fluid").get_attribute("src")
+            name = driver.find_element("id", "product-name").text.strip()   
             price = float(driver.find_element(
                "class name", "value").get_attribute("content"))
             print(price)
             specialPrice = price*0.9
+            sku = driver.find_element("class name", "product-id").text.strip()    
         except:
-            price = "No price"
-            specialPrice= "No special price"
-
-        try:
-            sku = driver.find_element("class name", "product-id").text.strip()
-        except:
-            sku = "Not Found"
+            data=data+[]
 
         # Select HAND values
         try:
@@ -98,7 +79,7 @@ for page in pages:
                   hand = hand+[option.text.strip()]
             print(hand)
         except:
-            hand = ["NA"]
+            hand = []
 
         # Select SHAFT values
         try:
@@ -110,7 +91,7 @@ for page in pages:
                   shaft = shaft+[option.text.strip()]
             print(shaft)
         except:
-            shaft = ["NA"]
+            shaft = []
 
         # Select LOFT values
         try:
@@ -131,7 +112,7 @@ for page in pages:
                         loft = loft+[option.text.strip().replace("°", "")]
                 print(loft)
             except:
-                loft = ["NA"]
+                loft = []
         
         # Select FLEX values
         try:
@@ -143,62 +124,64 @@ for page in pages:
                    flex = flex+[option.text.strip()]
             print(flex)
         except:
-            flex = ["NA"]
+            flex = []
 
-        data = data+[{'Name': name, 
+
+        data = data+[{'Product Name': name, 
                       'Price (TaylorMade Price Book) USD': price, 
                       'SKU': sku, 
                       'Category': page['category'],
                       'Price (VIP Pricing)': specialPrice, 
-                      'Entitlement': 'View All', 
-                      'ProductIsActive': 'TRUE', 
-                      'Image': image,
+                      'Entitlement': 'All Access for TaylorMade AURA', 
+                      'Product isActive': 'TRUE', 
+                      'Media Standard Url 1': image,
                       'Variation AttributeSet':'Club_Combinations'
                       }]
 
 
-
+        count = 1;
         for i, j, k, l in product(hand, shaft, loft, flex):
-            data = data+[{'Name': name, 
+            data = data+[{'Product Name': name, 
                           'Price (TaylorMade Price Book) USD': price, 
-                          'SKU': sku,
+                          'SKU': sku + str(count),
                           'Price (VIP Pricing)': specialPrice, 
                           'Variation Attribute Name 1': 'Hand__c',
-                          'Hand': i, 
+                          'Variation Attribute Value 1': i, 
                           'Variation Attribute Name 2': 'Shaft__c',
-                          'Shaft': j,
+                          'Variation Attribute Value 2': j,
                           'Variation Attribute Name 3': 'Loft__c',
-                          'Loft': k, 
+                          'Variation Attribute Value 3': k, 
                           'Variation Attribute Name 4': 'Flex__c',
-                          'Flex': l, 
-                          'Entitlement': 'View All', 
-                          'ProductIsActive': 'TRUE', 
+                          'Variation Attribute Value 4': l, 
+                          'Entitlement': 'All Access for TaylorMade AURA', 
+                          'Product isActive': 'TRUE', 
                           'Variation Parent (StockKeepingUnit)': sku, 
-                          'Image': image
+                          'Media Standard Url 1': image
                           }]
+            count = count + 1
             print(i, j, k, l)
 
         print(name, price, image, sku, specialPrice)
 # Write the data to a CSV file
 csvfile = open('/Users/harold/Documents/names.csv', 'w', newline='')
-fieldnames = ['Name', 
+fieldnames = ['Product Name', 
               'Price (TaylorMade Price Book) USD', 
               'Price (VIP Pricing)', 
               'SKU', 
               'Category', 
               'Variation AttributeSet',
               'Variation Attribute Name 1',
-              'Hand', 
+              'Variation Attribute Value 1', 
               'Variation Attribute Name 2',
-              'Shaft', 
+              'Variation Attribute Value 2', 
               'Variation Attribute Name 3',
-              'Loft',
+              'Variation Attribute Value 3',
               'Variation Attribute Name 4',
-              'Flex', 
+              'Variation Attribute Value 4', 
               'Entitlement', 
-              'ProductIsActive', 
+              'Product isActive', 
               'Variation Parent (StockKeepingUnit)', 
-              'Image'
+              'Media Standard Url 1'
               ]
 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 writer.writeheader()
