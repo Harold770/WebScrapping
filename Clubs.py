@@ -32,11 +32,11 @@ pages = [
     {
         'category': "Products/Clubs/Wedges",
         'url': "https://www.taylormadegolf.com/taylormade-wedges/?lang=en_US"
-    },
-    {
-        'category': "Products/Clubs/Putters",
-        'url': "https://www.taylormadegolf.com/taylormade-putters/?lang=en_US"
     }
+    # {
+    #     'category': "Products/Clubs/Putters",
+    #     'url': "https://www.taylormadegolf.com/taylormade-putters/?lang=en_US"
+    # }
 
 ]
 
@@ -75,8 +75,9 @@ for page in pages:
             options = select.find_elements("tag name", "option")
             hand = []
             for option in options:
-             if (option.text.strip() != "Select Hand"):
-                  hand = hand+[option.text.strip()]
+             if (len(hand) <= 2):
+                if (option.text.strip() != "Select Hand"):
+                      hand = hand+[option.text.strip()]
             print(hand)
         except:
             hand = []
@@ -87,8 +88,9 @@ for page in pages:
             options = select.find_elements("tag name", "option")
             shaft = []
             for option in options:
-              if (option.text.strip() != "Select Shaft"):
-                  shaft = shaft+[option.text.strip()]
+              if (len(shaft) <= 2):
+                if (option.text.strip() != "Select Shaft"):
+                      shaft = shaft+[option.text.strip()]
             print(shaft)
         except:
             shaft = []
@@ -99,8 +101,9 @@ for page in pages:
             options = select.find_elements("tag name", "option")
             loft = []
             for option in options:
-                if (option.text.strip() != "Select Loft"):
-                    loft = loft+[option.text.strip().replace("°", "")]
+                if(len(loft) <= 2):
+                    if (option.text.strip() != "Select Loft"):
+                        loft = loft+[option.text.strip().replace("°", "")]
             print(loft)
         except:
             try:
@@ -108,8 +111,9 @@ for page in pages:
                 options = select.find_elements("tag name", "option")
                 loft = []
                 for option in options:
-                    if (option.text.strip() != "Select Loft"):
-                        loft = loft+[option.text.strip().replace("°", "")]
+                    if(len(loft) <= 2):
+                        if (option.text.strip() != "Select Loft"):
+                            loft = loft+[option.text.strip().replace("°", "")]
                 print(loft)
             except:
                 loft = []
@@ -119,9 +123,10 @@ for page in pages:
             select = driver.find_element("id", "Akeneo_Flex-1")
             options = select.find_elements("tag name", "option")
             flex = []
-            for option in options:
-               if (option.text.strip() != "Select Flex"):
-                   flex = flex+[option.text.strip()]
+            for option in options: 
+                if (len(flex) <= 2):
+                    if (option.text.strip() != "Select Flex"):
+                        flex = flex+[option.text.strip()]
             print(flex)
         except:
             flex = []
@@ -135,13 +140,15 @@ for page in pages:
                       'Entitlement': 'All Access for TaylorMade AURA', 
                       'Product isActive': 'TRUE', 
                       'Media Standard Url 1': image,
+                      'Media Listing URL' : image,
                       'Variation AttributeSet':'Club_Combinations'
                       }]
 
 
         count = 1;
         for i, j, k, l in product(hand, shaft, loft, flex):
-            data = data+[{'Product Name': name, 
+            if count <= 2:
+                data = data+[{'Product Name': name, 
                           'Price (TaylorMade Price Book) USD': price, 
                           'SKU': sku + str(count),
                           'Price (VIP Pricing)': specialPrice, 
@@ -155,15 +162,14 @@ for page in pages:
                           'Variation Attribute Value 4': l, 
                           'Entitlement': 'All Access for TaylorMade AURA', 
                           'Product isActive': 'TRUE', 
-                          'Variation Parent (StockKeepingUnit)': sku, 
-                          'Media Standard Url 1': image
+                          'Variation Parent (StockKeepingUnit)': sku
                           }]
             count = count + 1
             print(i, j, k, l)
 
         print(name, price, image, sku, specialPrice)
 # Write the data to a CSV file
-csvfile = open('/Users/harold/Documents/names.csv', 'w', newline='')
+csvfile = open('/Users/harold/Documents/balls.csv', 'w', newline='')
 fieldnames = ['Product Name', 
               'Price (TaylorMade Price Book) USD', 
               'Price (VIP Pricing)', 
@@ -181,7 +187,8 @@ fieldnames = ['Product Name',
               'Entitlement', 
               'Product isActive', 
               'Variation Parent (StockKeepingUnit)', 
-              'Media Standard Url 1'
+              'Media Standard Url 1',
+              'Media Listing URL'
               ]
 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 writer.writeheader()
